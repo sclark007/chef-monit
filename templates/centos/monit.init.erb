@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 #
 # monit         Monitor Unix systems
 #
@@ -6,10 +6,10 @@
 #
 # chkconfig:    2345 98 02
 # description:  Monit is a utility for managing and monitoring processes,
-#               files, directories and filesystems on a Unix system.
+#               files, directories and filesystems on a Unix system. 
 # processname:  monit
 # pidfile:      /var/run/monit.pid
-# config:       /etc/monit.conf
+# config:       /etc/monitrc
 
 # Source function library.
 . /etc/rc.d/init.d/functions
@@ -17,15 +17,12 @@
 # Source networking configuration.
 . /etc/sysconfig/network
 
-MONIT="<%= @prefix %>/bin/monit"
+MONIT=/opt/monit/bin/monit
 
 # Source monit configuration.
 if [ -f /etc/sysconfig/monit ] ; then
-        . /etc/sysconfig/monit
+    . /etc/sysconfig/monit
 fi
-
-CONFIG="<%= @config %>"
-MONIT_OPTS="-c $CONFIG $MONIT_OPTS"
 
 [ -f $MONIT ] || exit 0
 
@@ -35,38 +32,33 @@ RETVAL=0
 case "$1" in
   start)
         echo -n "Starting monit: "
-        daemon $NICELEVEL $MONIT $MONIT_OPTS
+        $MONIT -c /etc/monitrc
         RETVAL=$?
         echo
         [ $RETVAL = 0 ] && touch /var/lock/subsys/monit
         ;;
   stop)
         echo -n "Stopping monit: "
-        killproc monit
+        $MONIT -c /etc/monitrc quit
         RETVAL=$?
         echo
         [ $RETVAL = 0 ] && rm -f /var/lock/subsys/monit
         ;;
   restart)
-        $0 stop
-        $0 start
-        RETVAL=$?
-        ;;
-  reload)
-        echo -n "Reloading monit: "
-        $MONIT $MONIT_OPTS reload
-        RETVAL=$?
-        ;;
+  	$0 stop
+	$0 start
+	RETVAL=$?
+	;;
   condrestart)
        [ -e /var/lock/subsys/monit ] && $0 restart
        ;;
   status)
         status monit
-        RETVAL=$?
-        ;;
+	RETVAL=$?
+	;;
   *)
-        echo "Usage: $0 {start|stop|restart|condrestart|status}"
-        exit 1
+	echo "Usage: $0 {start|stop|restart|condrestart|status}"
+	exit 1
 esac
 
 exit $RETVAL
