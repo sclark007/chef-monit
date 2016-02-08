@@ -16,6 +16,7 @@ end
 remote_file "#{cache_path}/#{tar_file}" do
   source node["monit"]["binary"]["url"]
   checksum node["monit"]["binary"]["checksum"]
+  not_if "#{node["monit"]["binary"]["prefix"]}/bin/monit -V | grep #{node["monit"]["binary"]["version"]}"
   action :create_if_missing
   notifies :run, "execute[install-monit-binary]", :immediately
 end
